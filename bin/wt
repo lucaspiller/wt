@@ -12,6 +12,7 @@ usage() {
     echo "       wt cd <name> [--from <branch>]" >&2
     echo "       wt rm <name> [--force]" >&2
     echo "       wt exit" >&2
+    echo "       wt status" >&2
     exit 1
 }
 
@@ -52,6 +53,9 @@ case "$cmd" in
         ;;
     exit)
         exec bash "$COMMANDS_DIR/exit.sh" "$REPO_ROOT"
+        ;;
+    status)
+        exec bash "$COMMANDS_DIR/status.sh" "$REPO_ROOT"
         ;;
     -h|--help)
         usage

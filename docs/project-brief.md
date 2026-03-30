@@ -2,38 +2,36 @@
 
 ## What this is
 
-A bash CLI tool that gives you a single command — `wt <name>` — to create or switch to git worktrees. If the worktree exists, it cds into it. If not, it creates the branch and worktree in a sibling directory, runs post-create hooks (e.g. copying personal Cursor skills, installing deps), then cds in. It replaces the multi-step `git worktree add` / `cd` / manual-setup dance with one command.
+A bash CLI tool for managing git worktrees. One command creates a worktree and branch, runs setup hooks, and drops you in. A status dashboard shows all worktrees grouped by lifecycle stage (in progress, in review, done) with GitHub PR/CI integration. It replaces the manual `git worktree add` / setup / context-switching dance.
 
 ## Essential workflow
 
-Name → create-or-switch → hook → work.
+Name → create-or-switch → hook → work → check status → clean up.
 
-## First usable version
+## Current state
 
-- `wt <name>` that creates-or-switches (single entry point)
-- Sibling directory layout with configurable base path (default `.worktrees`)
-- Branch created from current HEAD when worktree doesn't exist
-- `.worktrees/hooks/` directory
-- Shell integration (bash/zsh function) so `cd` actually works
-- Installable via PATH or symlink for development
+- `wt <name>` creates-or-switches (single entry point)
+- `wt rm <name>` removes worktree + branch with safety checks
+- `wt exit` returns to main repo root
+- `.worktrees/hooks/create/` and `.worktrees/hooks/switch/` for setup automation
+- Shell integration (bash/zsh) so cd works
+- Configurable base path and default branch
 
-## Good enough for now
+## What's next
 
-- Config is env vars or a dotfile, not a full config system (in base path, e.g. `.worktrees/config`)
-- No tab completion
-- No color/fancy output — just clear status messages
-- Hook errors print warnings but don't block
-- No cleanup/delete command yet
+- `wt status` — dashboard of all worktrees grouped into In Progress / In Review / Done
+- GitHub integration via `gh` CLI for PR status, CI checks, review state
+- Colored output for status command
 
 ## What isn't the core
 
-- GitHub integration (CI status, PR checks) — later
 - Linear ticket integration — later
-- `wt list` / dashboard of active worktrees — later
-- `wt delete` / garbage collection — later
 - Cursor auto-open — later (user can alias)
+- Tab completion — later
 - Performance, parallel hook execution — not needed
 
 ## How to verify
 
-From a git repo, run `wt test-abc`. Verify: sibling directory exists, branch `test-abc` exists, hooks in `hooks/` ran (create a hook that touches a marker file), shell is now in the new worktree directory. Run `wt test-abc` again — verify it just cds into the existing worktree without re-running hooks or re-creating anything.
+Core: `wt test-abc` creates worktree + branch, runs hooks, cds in. `wt test-abc` again just switches. `wt rm test-abc` cleans up.
+
+Status: `wt status` in a repo with multiple worktrees shows them grouped by lifecycle with correct PR/CI/review info from GitHub.

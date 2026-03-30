@@ -13,34 +13,26 @@ echo "=== lib/github.sh ==="
 MOCK_DIR="$(mktemp -d)"
 cat > "$MOCK_DIR/gh" <<'MOCK'
 #!/usr/bin/env bash
-cat <<'JSON'
-[
-  {
-    "headRefName": "feat-login",
-    "title": "Add login page",
-    "state": "OPEN",
-    "isDraft": false,
-    "reviewDecision": "APPROVED",
-    "statusCheckRollup": [{"state": "SUCCESS"}]
-  },
-  {
-    "headRefName": "fix-bug",
-    "title": "Fix crash on save",
-    "state": "MERGED",
-    "isDraft": false,
-    "reviewDecision": "APPROVED",
-    "statusCheckRollup": [{"state": "SUCCESS"}]
-  },
-  {
-    "headRefName": "wip-draft",
-    "title": "WIP: new feature",
-    "state": "OPEN",
-    "isDraft": true,
-    "reviewDecision": "",
-    "statusCheckRollup": [{"state": "PENDING"}]
-  }
-]
-JSON
+# Mock gh pr view <branch> --json ...
+branch="$3"
+case "$branch" in
+  feat-login)
+    echo '{"headRefName":"feat-login","title":"Add login page","state":"OPEN","isDraft":false,"reviewDecision":"APPROVED","statusCheckRollup":[{"status":"COMPLETED","conclusion":"SUCCESS"},{"status":"COMPLETED","conclusion":"SKIPPED"}]}'
+    ;;
+  fix-bug)
+    echo '{"headRefName":"fix-bug","title":"Fix crash on save","state":"MERGED","isDraft":false,"reviewDecision":"APPROVED","statusCheckRollup":[{"status":"COMPLETED","conclusion":"SUCCESS"}]}'
+    ;;
+  wip-draft)
+    echo '{"headRefName":"wip-draft","title":"WIP: new feature","state":"OPEN","isDraft":true,"reviewDecision":"","statusCheckRollup":[{"status":"IN_PROGRESS","conclusion":""}]}'
+    ;;
+  ci-fail)
+    echo '{"headRefName":"ci-fail","title":"Broken build","state":"OPEN","isDraft":false,"reviewDecision":"","statusCheckRollup":[{"status":"COMPLETED","conclusion":"SUCCESS"},{"status":"COMPLETED","conclusion":"FAILURE"}]}'
+    ;;
+  *)
+    echo "no pull requests found for branch \"$branch\"" >&2
+    exit 1
+    ;;
+esac
 MOCK
 chmod +x "$MOCK_DIR/gh"
 export PATH="$MOCK_DIR:$PATH"
@@ -50,7 +42,7 @@ export PATH="$MOCK_DIR:$PATH"
 REPO_DIR="$(setup_test_repo)"
 cd "$REPO_DIR"
 
-wt_gh_fetch_prs
+wt_gh_fetch_prs "." "feat-login" "fix-bug" "wip-draft" "ci-fail" "no-pr-branch"
 
 result="$(wt_gh_pr_state "feat-login")"
 assert_eq "open PR state" "OPEN" "$result"
@@ -73,6 +65,12 @@ assert_eq "non-draft PR" "false" "$result"
 result="$(wt_gh_pr_ci_status "feat-login")"
 assert_eq "CI passing" "SUCCESS" "$result"
 
+result="$(wt_gh_pr_ci_status "wip-draft")"
+assert_eq "CI in progress" "PENDING" "$result"
+
+result="$(wt_gh_pr_ci_status "ci-fail")"
+assert_eq "CI failure" "FAILURE" "$result"
+
 result="$(wt_gh_pr_review "feat-login")"
 assert_eq "review approved" "APPROVED" "$result"
 
@@ -84,7 +82,7 @@ rm -rf "$MOCK_DIR"
 EMPTY_DIR="$(mktemp -d)"
 _OLD_PATH="$PATH"
 export PATH="$EMPTY_DIR"
-wt_gh_fetch_prs 2>/dev/null
+wt_gh_fetch_prs "." "anything" 2>/dev/null
 
 result="$(wt_gh_pr_state "anything")"
 assert_eq "no gh returns empty" "" "$result"

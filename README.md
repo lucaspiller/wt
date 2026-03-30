@@ -34,6 +34,20 @@ wt rm <name>               # remove worktree + branch (safe: checks for uncommit
 wt rm <name> --force       # remove regardless
 ```
 
+Leave the current worktree:
+
+```bash
+wt exit                    # cd back to the main repo root
+```
+
+Show all worktrees grouped by lifecycle:
+
+```bash
+wt status                  # lists In Progress / In Review / Done
+```
+
+Worktrees with an open (non-draft) PR show up under **In Review** with CI and review status. Merged PRs with no uncommitted changes show under **Done**. Everything else is **In Progress**. Requires the [GitHub CLI](https://cli.github.com/) (`gh`) for PR integration.
+
 Worktrees live in `.worktrees/<name>` inside your repo. The branch name matches the worktree name.
 
 ## Hooks
