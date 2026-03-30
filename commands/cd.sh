@@ -38,10 +38,17 @@ wt_cd() {
 
     echo "wt: creating worktree '$name' from '$from_branch'" >&2
 
+    local git_output
     if git show-ref --verify --quiet "refs/heads/$name"; then
-        git worktree add "$worktree_path" "$name" >/dev/null 2>&1
+        if ! git_output="$(git worktree add "$worktree_path" "$name" 2>&1)"; then
+            echo "wt: failed to create worktree: $git_output" >&2
+            return 1
+        fi
     else
-        git worktree add -b "$name" "$worktree_path" "$from_branch" >/dev/null 2>&1
+        if ! git_output="$(git worktree add -b "$name" "$worktree_path" "$from_branch" 2>&1)"; then
+            echo "wt: failed to create worktree: $git_output" >&2
+            return 1
+        fi
     fi
 
     local create_hooks="$base_path/hooks/create"

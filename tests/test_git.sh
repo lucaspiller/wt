@@ -46,4 +46,40 @@ assert_eq "detects master branch" "master" "$result"
 
 cleanup_test_repo "$REPO_DIR"
 
+# test with dev branch
+REPO_DIR="$(mktemp -d)"
+cd "$REPO_DIR"
+git init -b dev . >/dev/null 2>&1
+git commit --allow-empty -m "initial" >/dev/null 2>&1
+
+result="$(wt_git_main_branch)"
+assert_eq "detects dev branch" "dev" "$result"
+
+cleanup_test_repo "$REPO_DIR"
+
+# test with remote HEAD (origin/HEAD → origin/dev)
+REPO_DIR="$(mktemp -d)"
+cd "$REPO_DIR"
+git init -b custom-default . >/dev/null 2>&1
+git commit --allow-empty -m "initial" >/dev/null 2>&1
+# simulate origin/HEAD pointing to custom-default
+git remote add origin "$REPO_DIR" >/dev/null 2>&1
+git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/custom-default >/dev/null 2>&1
+
+result="$(wt_git_main_branch)"
+assert_eq "detects branch from remote HEAD" "custom-default" "$result"
+
+cleanup_test_repo "$REPO_DIR"
+
+# test with no recognizable default branch
+REPO_DIR="$(mktemp -d)"
+cd "$REPO_DIR"
+git init -b something-weird . >/dev/null 2>&1
+git commit --allow-empty -m "initial" >/dev/null 2>&1
+
+result="$(wt_git_main_branch 2>/dev/null || true)"
+assert_eq "unknown branch returns empty" "" "$result"
+
+cleanup_test_repo "$REPO_DIR"
+
 test_summary
