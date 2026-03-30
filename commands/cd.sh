@@ -21,7 +21,7 @@ wt_cd() {
     if [ -d "$worktree_path" ]; then
         echo "wt: switching to '$name'" >&2
         local switch_hooks="$base_path/hooks/switch"
-        wt_run_hooks "$switch_hooks" "$worktree_path"
+        wt_run_hooks "$switch_hooks" "$worktree_path" "$repo_root"
         echo "$worktree_path"
         return 0
     fi
@@ -45,7 +45,7 @@ wt_cd() {
     fi
 
     local create_hooks="$base_path/hooks/create"
-    wt_run_hooks "$create_hooks" "$worktree_path"
+    wt_run_hooks "$create_hooks" "$worktree_path" "$repo_root"
 
     echo "$worktree_path"
 }

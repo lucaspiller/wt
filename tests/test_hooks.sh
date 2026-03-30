@@ -31,7 +31,7 @@ chmod +x "$HOOK_DIR/01-first"
 TARGET="$REPO_DIR/.worktrees/test-wt"
 mkdir -p "$TARGET"
 
-wt_run_hooks "$HOOK_DIR" "$TARGET" 2>/dev/null
+wt_run_hooks "$HOOK_DIR" "$TARGET" "$REPO_DIR" 2>/dev/null
 assert_file_exists "hook log created" "$TARGET/.hook-log"
 
 first_line="$(head -1 "$TARGET/.hook-log")"
@@ -65,9 +65,34 @@ chmod +x "$HOOK_DIR/02-succeed"
 TARGET="$REPO_DIR/.worktrees/test-wt"
 mkdir -p "$TARGET"
 
-stderr="$(wt_run_hooks "$HOOK_DIR" "$TARGET" 2>&1)"
+stderr="$(wt_run_hooks "$HOOK_DIR" "$TARGET" "$REPO_DIR" 2>&1)"
 assert_contains "warning printed for failed hook" "$stderr" "warning"
 assert_file_exists "second hook still ran" "$TARGET/.hook-log"
+
+cleanup_test_repo "$REPO_DIR"
+
+# --- hooks receive repo root as $2 ---
+
+REPO_DIR="$(setup_test_repo)"
+cd "$REPO_DIR"
+
+HOOK_DIR="$REPO_DIR/.worktrees/hooks/create"
+mkdir -p "$HOOK_DIR"
+
+cat > "$HOOK_DIR/01-check-root" <<'HOOK'
+#!/usr/bin/env bash
+echo "$2" > "$1/.repo-root"
+HOOK
+chmod +x "$HOOK_DIR/01-check-root"
+
+TARGET="$REPO_DIR/.worktrees/test-wt"
+mkdir -p "$TARGET"
+
+wt_run_hooks "$HOOK_DIR" "$TARGET" "$REPO_DIR" 2>/dev/null
+assert_file_exists "repo root file created" "$TARGET/.repo-root"
+
+root_value="$(cat "$TARGET/.repo-root")"
+assert_eq "hook received repo root as \$2" "$REPO_DIR" "$root_value"
 
 cleanup_test_repo "$REPO_DIR"
 
@@ -76,7 +101,7 @@ cleanup_test_repo "$REPO_DIR"
 REPO_DIR="$(setup_test_repo)"
 cd "$REPO_DIR"
 
-wt_run_hooks "$REPO_DIR/.worktrees/hooks/create" "$REPO_DIR" 2>/dev/null
+wt_run_hooks "$REPO_DIR/.worktrees/hooks/create" "$REPO_DIR" "$REPO_DIR" 2>/dev/null
 assert_exit_code "missing hook dir is ok" "0" "$?"
 
 cleanup_test_repo "$REPO_DIR"

@@ -3,6 +3,7 @@
 wt_run_hooks() {
     local hook_dir="$1"
     local worktree_path="$2"
+    local repo_root="$3"
 
     [ -d "$hook_dir" ] || return 0
 
@@ -16,7 +17,7 @@ wt_run_hooks() {
         local hook_name
         hook_name="$(basename "$hook")"
         echo "wt: running hook '$hook_name'" >&2
-        if ! "$hook" "$worktree_path"; then
+        if ! "$hook" "$worktree_path" "$repo_root"; then
             echo "wt: warning: hook '$hook_name' exited with non-zero status" >&2
         fi
     done
