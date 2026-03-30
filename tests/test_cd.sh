@@ -61,7 +61,6 @@ cat > .worktrees/hooks/create/01-marker <<'HOOK'
 touch "$1/.created-marker"
 echo "$2" > "$1/.hook-repo-root"
 HOOK
-chmod +x .worktrees/hooks/create/01-marker
 
 bash "$PROJECT_ROOT/commands/cd.sh" "$REPO_DIR" "hooked-wt" "" >/dev/null 2>&1
 
@@ -84,7 +83,6 @@ cat > .worktrees/hooks/switch/01-marker <<'HOOK'
 #!/usr/bin/env bash
 touch "$1/.switched-marker"
 HOOK
-chmod +x .worktrees/hooks/switch/01-marker
 
 bash "$PROJECT_ROOT/commands/cd.sh" "$REPO_DIR" "switch-test" "" >/dev/null 2>&1
 

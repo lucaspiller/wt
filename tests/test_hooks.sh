@@ -20,13 +20,10 @@ cat > "$HOOK_DIR/02-second" <<'HOOK'
 #!/usr/bin/env bash
 echo "second" >> "$1/.hook-log"
 HOOK
-chmod +x "$HOOK_DIR/02-second"
-
 cat > "$HOOK_DIR/01-first" <<'HOOK'
 #!/usr/bin/env bash
 echo "first" >> "$1/.hook-log"
 HOOK
-chmod +x "$HOOK_DIR/01-first"
 
 TARGET="$REPO_DIR/.worktrees/test-wt"
 mkdir -p "$TARGET"
@@ -54,13 +51,10 @@ cat > "$HOOK_DIR/01-fail" <<'HOOK'
 #!/usr/bin/env bash
 exit 1
 HOOK
-chmod +x "$HOOK_DIR/01-fail"
-
 cat > "$HOOK_DIR/02-succeed" <<'HOOK'
 #!/usr/bin/env bash
 echo "ran" >> "$1/.hook-log"
 HOOK
-chmod +x "$HOOK_DIR/02-succeed"
 
 TARGET="$REPO_DIR/.worktrees/test-wt"
 mkdir -p "$TARGET"
@@ -83,7 +77,6 @@ cat > "$HOOK_DIR/01-check-root" <<'HOOK'
 #!/usr/bin/env bash
 echo "$2" > "$1/.repo-root"
 HOOK
-chmod +x "$HOOK_DIR/01-check-root"
 
 TARGET="$REPO_DIR/.worktrees/test-wt"
 mkdir -p "$TARGET"
