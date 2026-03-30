@@ -11,6 +11,7 @@ usage() {
     echo "usage: wt <name> [--from <branch>]" >&2
     echo "       wt cd <name> [--from <branch>]" >&2
     echo "       wt rm <name> [--force]" >&2
+    echo "       wt exit" >&2
     exit 1
 }
 
@@ -48,6 +49,9 @@ case "$cmd" in
             esac
         done
         exec bash "$COMMANDS_DIR/rm.sh" "$REPO_ROOT" "$name" "$force"
+        ;;
+    exit)
+        exec bash "$COMMANDS_DIR/exit.sh" "$REPO_ROOT"
         ;;
     -h|--help)
         usage
