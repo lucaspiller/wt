@@ -25,6 +25,19 @@ assert_eq "repo root from nested dir" "$expected_root" "$result"
 
 cleanup_test_repo "$REPO_DIR"
 
+# --- repo root resolves to main repo from inside a worktree ---
+
+REPO_DIR="$(setup_test_repo)"
+cd "$REPO_DIR"
+expected_root="$(pwd -P)"
+
+git worktree add .worktrees/inside-wt -b inside-wt main >/dev/null 2>&1
+cd .worktrees/inside-wt
+result="$(wt_git_repo_root)"
+assert_eq "repo root from inside worktree" "$expected_root" "$result"
+
+cleanup_test_repo "$REPO_DIR"
+
 # --- wt_git_main_branch ---
 
 REPO_DIR="$(setup_test_repo)"

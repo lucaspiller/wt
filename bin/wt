@@ -10,6 +10,7 @@ source "$LIB_DIR/git.sh"
 usage() {
     echo "usage: wt <name> [--from <branch>]" >&2
     echo "       wt cd <name> [--from <branch>]" >&2
+    echo "       wt rm <name> [--force]" >&2
     exit 1
 }
 
@@ -35,6 +36,18 @@ case "$cmd" in
             esac
         done
         exec bash "$COMMANDS_DIR/cd.sh" "$REPO_ROOT" "$name" "$from_branch"
+        ;;
+    rm)
+        [ $# -lt 1 ] && usage
+        name="$1"; shift
+        force=""
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                --force) force="--force"; shift ;;
+                *) echo "wt: unknown option '$1'" >&2; exit 1 ;;
+            esac
+        done
+        exec bash "$COMMANDS_DIR/rm.sh" "$REPO_ROOT" "$name" "$force"
         ;;
     -h|--help)
         usage

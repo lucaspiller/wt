@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 
 wt_git_repo_root() {
-    git rev-parse --show-toplevel
+    local common_dir
+    common_dir="$(git rev-parse --git-common-dir 2>/dev/null)" || return 1
+
+    # In a worktree, --git-common-dir points to the main repo's .git
+    # In the main repo, it returns ".git"
+    if [ "$common_dir" = ".git" ]; then
+        git rev-parse --show-toplevel
+    else
+        (cd "$common_dir/.." && pwd -P)
+    fi
 }
 
 wt_git_main_branch() {
