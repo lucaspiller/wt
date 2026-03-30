@@ -11,7 +11,7 @@ setup_test_repo() {
     cd "$tmpdir" || exit 1
     git init -b main . >/dev/null 2>&1
     git commit --allow-empty -m "initial" >/dev/null 2>&1
-    echo "$tmpdir"
+    pwd -P
 }
 
 cleanup_test_repo() {

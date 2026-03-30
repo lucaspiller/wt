@@ -1,4 +1,53 @@
 #!/usr/bin/env bash
 set -euo pipefail
-echo "wt: not yet implemented" >&2
-exit 1
+
+WT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+COMMANDS_DIR="$WT_ROOT/commands"
+LIB_DIR="$WT_ROOT/lib"
+
+source "$LIB_DIR/git.sh"
+
+usage() {
+    echo "usage: wt <name> [--from <branch>]" >&2
+    echo "       wt cd <name> [--from <branch>]" >&2
+    exit 1
+}
+
+[ $# -lt 1 ] && usage
+
+REPO_ROOT="$(wt_git_repo_root 2>/dev/null)" || {
+    echo "wt: not a git repository" >&2
+    exit 1
+}
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    cd)
+        [ $# -lt 1 ] && usage
+        name="$1"; shift
+        from_branch=""
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                --from) from_branch="${2:-}"; shift 2 ;;
+                *) echo "wt: unknown option '$1'" >&2; exit 1 ;;
+            esac
+        done
+        exec bash "$COMMANDS_DIR/cd.sh" "$REPO_ROOT" "$name" "$from_branch"
+        ;;
+    -h|--help)
+        usage
+        ;;
+    *)
+        name="$cmd"
+        from_branch=""
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                --from) from_branch="${2:-}"; shift 2 ;;
+                *) echo "wt: unknown option '$1'" >&2; exit 1 ;;
+            esac
+        done
+        exec bash "$COMMANDS_DIR/cd.sh" "$REPO_ROOT" "$name" "$from_branch"
+        ;;
+esac
